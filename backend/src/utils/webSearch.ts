@@ -1,7 +1,6 @@
 import { tavily } from '@tavily/core';
 import { env } from '../shared/env';
 import { WebSearchResultSchema, WebSearchResultsSchema } from './schema';
-import { Response } from 'express';
 
 export async function webSearch(q: string) {
 	const query = (q ?? '').trim();
