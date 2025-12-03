@@ -7,3 +7,5 @@ export const WebSearchResultSchema = z.object({
 });
 
 export const WebSearchResultsSchema = z.array(WebSearchResultSchema).max(10);
+
+export type WebSearchResult = z.infer<typeof WebSearchResultSchema>;
