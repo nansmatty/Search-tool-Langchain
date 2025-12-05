@@ -43,5 +43,5 @@ function normalizeSummmary(s: string) {
 		.replace(/\n{3,}/g, '\n\n')
 		.trim();
 
-	return t.slice(0, 2500);
+	return t.slice(0, 2500).replace(/[\s\S]*?([.!?])[^.!?]*$/, '$1');
 }
