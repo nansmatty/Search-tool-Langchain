@@ -4,11 +4,17 @@ import { OpenURLOutputSchema } from './schema';
 export async function openUrl(url: string) {
 	const normalized = validateUrl(url);
 
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 10_000);
+
 	const res = await fetch(normalized, {
+		signal: controller.signal,
 		headers: {
 			'User-Agent': 'agent-core/1.0 (+course-demo)',
 		},
 	});
+
+	clearTimeout(timeout);
 
 	if (!res.ok) {
 		const body = await safeText(res);
@@ -16,6 +22,11 @@ export async function openUrl(url: string) {
 	}
 
 	const contentType = res.headers.get('content-type') ?? '';
+
+	if (!contentType.includes('text')) {
+		throw new Error(`Unsupported content-type: ${contentType}`);
+	}
+
 	const raw = await res.text();
 
 	const text = contentType.includes('text/html')
@@ -56,7 +67,7 @@ function validateUrl(url: string) {
 
 async function safeText(res: Response) {
 	try {
-		return await res.json();
+		return await res.text();
 	} catch (error) {
 		return '<no body>';
 	}
