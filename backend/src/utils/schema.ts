@@ -26,3 +26,9 @@ export const SummarizeInputSchema = z.object({
 export const SummarizeOutputSchema = z.object({
 	summary: z.string().min(1),
 });
+
+export const SearchInputSchema = z.object({
+	q: z.string().min(5, 'Query too short'),
+});
+
+export type SearchInput = z.infer<typeof SearchInputSchema>;
