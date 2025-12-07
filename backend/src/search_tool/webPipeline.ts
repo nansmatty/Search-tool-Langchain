@@ -96,4 +96,4 @@ export const composeStep = RunnableLambda.from(
 	}
 );
 
-export const webBasedPath = RunnableSequence.from([webSearchStep, openAndSummarizeStep, composeStep]);
+export const webPath = RunnableSequence.from([webSearchStep, openAndSummarizeStep, composeStep]);
