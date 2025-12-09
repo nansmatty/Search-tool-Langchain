@@ -36,6 +36,8 @@ export default function Home() {
 		setChat((prev) => [...prev, { role: 'user', content: prompt }]);
 		const oldTime = performance.now();
 		try {
+			console.log(process.env.NEXT_PUBLIC_API_URL);
+
 			const res = await fetch(`${API_URL}/search`, {
 				method: 'POST',
 				headers: {
@@ -140,7 +142,7 @@ export default function Home() {
 									{turn.content}
 								</div>
 								<div className='text-[11px] text-gray-500 flex flex-wrap items-center gap-x-2'>
-									{typeof turn.time === 'number' && <span>answered in {turn.time} time</span>}
+									{typeof turn.time === 'number' && <span>answered in {turn.time}ms</span>}
 									{turn.error && <span className='text-red-500'>Error: {turn.error}</span>}
 								</div>
 								{turn.sources.length > 0 && (
@@ -149,11 +151,9 @@ export default function Home() {
 										<ul className='space-y-1'>
 											{turn.sources.map((source, srcIndex) => (
 												<li key={srcIndex} className='truncate'>
-													<Link
-														href={source}
-														target='_blank'
-														rel='noreferrer'
-														className='text-blue-500 underline underline-offset-4 break-all'></Link>
+													<Link href={source} target='_blank' rel='noreferrer' className='text-blue-500 underline underline-offset-4 break-all'>
+														{source}
+													</Link>
 												</li>
 											))}
 										</ul>
@@ -167,12 +167,12 @@ export default function Home() {
 				{loading && (
 					<div className='mx-auto max-w-2xl flex items-start gap-3 text-left'>
 						<div className='flex h-8 w-8 flex-none items-center justify-center rounded-md bg-gray-700 text-[11px] font-semibold text-white'>...</div>
-						<p className='inline-block rounded-2xl bg-white px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200'></p>
+						<p className='inline-block rounded-2xl bg-white px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200'>Thinking</p>
 					</div>
 				)}
 				<footer className='border-t bg-white px-4 py-4'>
 					<form onSubmit={handleChatSubmit} className='mx-auto flex w-full max-w-2xl items-end gap-2'>
-						<div>
+						<div className='w-full'>
 							<Input
 								className='w-full resize-none'
 								placeholder='Ask your query...'
