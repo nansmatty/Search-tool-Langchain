@@ -12,6 +12,7 @@ const EnvSchema = z.object({
 	GOOGLE_API_KEY: z.string().optional(),
 	GROQ_API_KEY: z.string().optional(),
 	TAVILY_API_KEY: z.string().optional(),
+	RAG_MODEL_PROVIDER: z.enum(['openai', 'gemini']).default('gemini'),
 });
 
 export const env = EnvSchema.parse(process.env);
