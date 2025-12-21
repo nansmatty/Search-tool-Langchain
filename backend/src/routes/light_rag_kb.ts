@@ -19,7 +19,7 @@ lightRagKbRouter.post('/ingest', async (req, res) => {
 
 		const result = await ingestText({ text: body.text, source: body.source });
 
-		return res.status(200).json({ message: 'Ingestion successful', data: result });
+		return res.status(200).json({ message: 'Ingestion successful', ...result });
 	} catch (error) {
 		res.status(400).json({ error: error instanceof Error ? error.message : 'Some error occured while ingestion' });
 	}
