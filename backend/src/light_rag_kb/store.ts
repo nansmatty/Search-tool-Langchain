@@ -35,7 +35,7 @@ function makeGoogleEmbeddings() {
 
 	return new GoogleGenerativeAIEmbeddings({
 		apiKey: key,
-		model: 'gemini-embedding-002',
+		model: 'gemini-embedding-001',
 		taskType: TaskType.RETRIEVAL_DOCUMENT,
 	});
 }

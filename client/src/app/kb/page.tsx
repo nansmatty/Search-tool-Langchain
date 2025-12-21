@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { API_URL } from '@/lib/config';
+import { Separator } from '@radix-ui/react-separator';
 import { useState } from 'react';
 
 type Source = {
@@ -30,6 +31,14 @@ const LightRagKB = () => {
 	const [ingestSource, setIngestSource] = useState('');
 	const [ingestLoading, setIngestLoading] = useState(false);
 	const [ingestMessage, setIngestMessage] = useState<string | null>(null);
+
+	const [question, setQuestion] = useState('');
+	const [topK, setTopK] = useState(2);
+	const [askLoading, setAskLoading] = useState(false);
+	const [resTime, setResTime] = useState<number | null>(null);
+
+	const [answerData, setAnswerData] = useState<Response | null>(null);
+	const [showSources, _] = useState(true);
 
 	async function handleIngest(e: React.FormEvent) {
 		e.preventDefault();
@@ -60,6 +69,40 @@ const LightRagKB = () => {
 			setIngestMessage('Ingestion failed. Please try again.');
 		} finally {
 			setIngestLoading(false);
+		}
+	}
+
+	async function handleAskSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		setAskLoading(true);
+		setAnswerData(null);
+		setResTime(null);
+		const startTime = performance.now();
+
+		try {
+			const response = await fetch(`${API_URL}/kb/ask`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					query: question,
+					k: topK,
+				}),
+			});
+
+			const data: Response | { error: string } = await response.json();
+			if (!response.ok) {
+				throw new Error('Ask failed');
+			}
+			const result = data as Response;
+			setAnswerData(result);
+		} catch (error) {
+			console.error('Ask error:', error);
+		} finally {
+			const endTime = performance.now();
+			setResTime(Math.round(endTime - startTime));
+			setAskLoading(false);
 		}
 	}
 
@@ -96,15 +139,65 @@ const LightRagKB = () => {
 								/>
 							</div>
 							<div className='flex items-center gap-2'>
-								<Button type='button' className='cursor-pointer' disabled={ingestLoading} variant='destructive'>
+								<Button type='button' className='cursor-pointer' variant='destructive'>
 									Reset
 								</Button>
-								<Button type='submit' className='cursor-pointer'>
-									Ingest To KB
+								<Button type='submit' disabled={ingestLoading} className='cursor-pointer'>
+									{ingestLoading ? 'Ingesting...' : 'Ingest to KB'}
 								</Button>
 							</div>
 						</form>
 						<div className='text-xs mt-5'>{ingestMessage ? <div className='text-green-500'>{ingestMessage}</div> : null}</div>
+					</CardContent>
+				</Card>
+				<Card className='flex flex-col'>
+					<CardHeader className='pb-3'>
+						<CardTitle className='text-base font-semibold'>Ask your Question</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<form onSubmit={handleAskSubmit} className='flex flex-col gap-4'>
+							<div className='flex flex-col gap-2'>
+								<label className='text-xs  font-medium text-muted-foreground'>Your Query</label>
+								<Input
+									type='text'
+									className='text-sm'
+									value={question}
+									onChange={(e) => setQuestion(e.target.value)}
+									placeholder='Ask your question here...'
+								/>
+							</div>
+							<div className='flex flex-col gap-2'>
+								<label className='text-xs  font-medium text-muted-foreground'>Top K Answers</label>
+								<Input type='number' min={1} max={5} className='text-sm' value={topK} onChange={(e) => setTopK(parseInt(e.target.value || '2', 5))} />
+							</div>
+							<div className='flex items-center gap-2'>
+								<Button type='submit' disabled={askLoading} className='cursor-pointer'>
+									{askLoading ? 'Asking...' : 'Ask KB'}
+								</Button>
+							</div>
+						</form>
+						{answerData && (
+							<div className='flex flex-col gap-4 pt-5'>
+								<div className='rounded-md border bg-muted/30 p-3 text-sm leading-relaxed whitespace-pre-wrap'>{answerData.answer}</div>
+								<div className='text-xs text-green-600'>Time: {resTime}ms</div>
+								{showSources && (
+									<div className='flex flex-col gap-2'>
+										<span>Sources ({answerData.sources.length})</span>
+										<Separator />
+										<ul className='space-y-3'>
+											{answerData.sources.map((src, idx) => (
+												<li key={idx} className='text-xs'>
+													<div className='font-medium text-foreground'>
+														{src.source}
+														<span>#{src.chunkId}</span>
+													</div>
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
+							</div>
+						)}
 					</CardContent>
 				</Card>
 			</section>
